@@ -1,66 +1,138 @@
 import 'package:flutter/material.dart';
+import './questionario.dart';
+import './resultado.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+main() => runApp(const _PerguntaApp());
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _PerguntaApp extends StatefulWidget {
+  const _PerguntaApp();
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+  _PerguntaAppState createState() {
+    return _PerguntaAppState();
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class _PerguntaAppState extends State<_PerguntaApp> {
+  var _perguntaSelecionada = 0;
+  int _pontuacaoTotal = 0;
 
-  final String title;
+  final List<Map<String, dynamic>> _perguntas = const [
+    {
+      'texto': 'Qual é a sua cor favorita?',
+      'respostas': [
+        {
+          'texto': 'Preto',
+          'pontuacao': 10,
+        },
+        {
+          'texto': 'Vermelho',
+          'pontuacao': 5,
+        },
+        {
+          'texto': 'Verde',
+          'pontuacao': 8,
+        },
+        {
+          'texto': 'Branco',
+          'pontuacao': 2,
+        },
+      ],
+    },
+    {
+      'texto': 'Qual é o seu animal favorito?',
+      'respostas': [
+        {
+          'texto': 'Coelho',
+          'pontuacao': 5,
+        },
+        {
+          'texto': 'Pato',
+          'pontuacao': 10,
+        },
+        {
+          'texto': 'Cobra',
+          'pontuacao': 2,
+        },
+        {
+          'texto': 'Leão',
+          'pontuacao': 6,
+        },
+      ],
+    },
+    {
+      'texto': 'Qual é o seu instrutor favorito?',
+      'respostas': [
+        {
+          'texto': 'Maria',
+          'pontuacao': 10,
+        },
+        {
+          'texto': 'João',
+          'pontuacao': 5,
+        },
+        {
+          'texto': 'Gabriel',
+          'pontuacao': 2,
+        },
+        {
+          'texto': 'Rafael',
+          'pontuacao': 7,
+        },
+      ],
+    },
+  ];
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  void _responder(int pontuacao) {
+    if (temPerguntaSelecionada) {
+      setState(() {
+        _perguntaSelecionada++;
+        _pontuacaoTotal += pontuacao;
+      });
+    }
+  }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
+  void _reiniciarQuestionario() {
     setState(() {
-      _counter++;
+      _perguntaSelecionada = 0;
+      _pontuacaoTotal = 0;
     });
   }
 
+  bool get temPerguntaSelecionada {
+    return _perguntaSelecionada < _perguntas.length;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    final questao = temPerguntaSelecionada
+        ? _perguntas[_perguntaSelecionada]['texto'] as String
+        : '';
+
+    final List<Map<String, dynamic>> respostas = temPerguntaSelecionada
+        ? _perguntas[_perguntaSelecionada]['respostas']
+        : [];
+    final opcoes =
+        respostas.map<String>((resposta) => resposta['texto']).toList();
+
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Perguntas'),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        body: temPerguntaSelecionada
+            ? Questionario(
+                questao: questao,
+                opcoes: opcoes,
+                aoSelecionarOpcao: (index) {
+                  int pontuacao = respostas[index]["pontuacao"] as int;
+                  _responder(pontuacao);
+                },
+              )
+            : Resultado(
+                pontuacao: _pontuacaoTotal,
+                quandoReiniciarQuestionario: _reiniciarQuestionario,
+              ),
       ),
     );
   }
